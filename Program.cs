@@ -225,11 +225,11 @@ void RefreshDetails()
     }
 
     var entry = filtered[glyphList.SelectedItem];
-    glyphLabel.Text = $"Glyph: {entry.Glyph}   Name: {entry.DisplayName}";
+    glyphLabel.Text = $"Glyph: {entry.DisplayGlyph}   Name: {entry.DisplayName}";
     codePointLabel.Text = $"Code point: U+{entry.CodePointHex}";
     sourceLabel.Text = $"Block: {entry.BlockName}   Collection: {entry.CollectionName}";
     planeLabel.Text = $"Plane: {entry.PlaneDescription}";
-    sampleLabel.Text = $"Rendered: {entry.Glyph}";
+    sampleLabel.Text = $"Rendered: {entry.DisplayGlyph}";
     notesView.Text = $"{entry.Description}\n\nSearch terms: {entry.SearchSummary}";
 }
 
@@ -245,7 +245,7 @@ void ShowDetailsForSelection()
         76,
         18,
         entry.DisplayName,
-        $"Glyph: {entry.Glyph}\nCode point: U+{entry.CodePointHex}\nCollection: {entry.CollectionName}\nBlock: {entry.BlockName}\nPlane: {entry.PlaneDescription}\n\n{entry.Description}",
+        $"Glyph: {entry.DisplayGlyph}\nCode point: U+{entry.CodePointHex}\nCollection: {entry.CollectionName}\nBlock: {entry.BlockName}\nPlane: {entry.PlaneDescription}\n\n{entry.Description}",
         "OK");
 }
 
@@ -426,6 +426,7 @@ sealed record GlyphEntry(
     int CodePoint,
     string CodePointHex,
     string Glyph,
+    string DisplayGlyph,
     string CollectionName,
     string BlockName,
     string DisplayName,
@@ -436,7 +437,7 @@ sealed record GlyphEntry(
 {
     public override string ToString()
     {
-        return $"{Glyph} U+{CodePointHex} {DisplayName}";
+        return $"{DisplayGlyph} U+{CodePointHex} {DisplayName}";
     }
 }
 
@@ -515,6 +516,7 @@ sealed class UnicodeCatalog
                         codePoint,
                         hex,
                         rune.ToString(),
+                        GetDisplayGlyph(rune.ToString(), plane.Key),
                         block.CollectionName,
                         block.BlockName,
                         $"{block.BlockName} {hex}",
@@ -642,5 +644,10 @@ sealed class UnicodeCatalog
         }
 
         return ("standard", "Standard Unicode plane");
+    }
+
+    private static string GetDisplayGlyph(string glyph, string planeKey)
+    {
+        return planeKey is "spua-a" or "spua-b" ? "[PUA]" : glyph;
     }
 }
